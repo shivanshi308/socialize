@@ -10,6 +10,8 @@ app.use(cors())
 const http= require('http').createServer(app)
 app.use(router)
 
+const { addUser, removeUser, getUser } = require('./users');
+
 const io= require('socket.io')(http,{
     cors: {
       origin: "http://localhost:3000",
@@ -27,9 +29,15 @@ io.on('connection', function(socket){
     socket.on('disconnect',()=>{
         console.log('user disconnected')
     })
-    // socket.on('event 1',()=>{
-    //     console.log('event received from client')
-    // })
+    socket.on('join', ({ name, room },callback) => {
+      const { error, user } = addUser({ id: socket.id, name, room });
+  
+      if(error)
+        return callback(error);
+      
+        console.log(user.name,user.room)
+      
+    });
 })
 
 http.listen(PORT, () => console.log(`Server now running!!!`));
