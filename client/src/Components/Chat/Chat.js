@@ -1,6 +1,10 @@
 import React,{useState, useEffect} from 'react'
 import queryString from 'query-string';
+import {InputForm} from '../InputForm/InputForm';
+
 const io= require("socket.io-client")
+
+
 
 let socket;
 
@@ -9,6 +13,9 @@ export const Chat =({location})=>{
     const ENDPOINT= "http://localhost:5000"
     const [name, setName] = useState('');
     const [room, setRoom] = useState('');
+    const [users, setUsers] = useState('');
+    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState([]);
   
     useEffect(()=>{
         socket=io.connect(ENDPOINT, {reconnect:true})
@@ -28,12 +35,33 @@ export const Chat =({location})=>{
                 alert(error);
             }
         });
-    },[ENDPOINT])
+    },[ENDPOINT,location.search])
+
+    useEffect(() => {
+        socket.on('message', message => {
+          setMessages(msgs => [ ...msgs, message ]);
+        });
+
+    }, []);
+
+
+    const sendMessage = (event) => {
+        event.preventDefault();
+    
+        if(message) {
+          socket.emit('sendMessage', message, () => setMessage(''));
+        }
+    }
+
+
 
     return (
-       <div className='App'>
-           <h1>Home pagee!</h1>
-       </div>
+        <div className="outerContainer">
+            <div className="container">
+                <h1>Chat screen</h1>
+                <InputForm message={message} setMessage={setMessage} sendMessage={sendMessage} />
+            </div>
+        </div>
       );
 
 }
